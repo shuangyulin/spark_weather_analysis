@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.TianqiinfoDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.entity.TianqiinfoEntity" id="tianqiinfoMap">
+        <result property="city" column="city"/>
+        <result property="riqi" column="riqi"/>
+        <result property="baitian" column="baitian"/>
+        <result property="wanshang" column="wanshang"/>
+        <result property="gaowen" column="gaowen"/>
+        <result property="diwen" column="diwen"/>
+        <result property="aqi" column="aqi"/>
+        <result property="fengxiang" column="fengxiang"/>
+        <result property="jsliang" column="jsliang"/>
+    </resultMap>
+
+	<select id="selectListVO"
+		resultType="com.entity.vo.TianqiinfoVO" >
+		SELECT * FROM tianqiinfo  tianqiinfo         
+        <where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+	
+	<select id="selectVO"
+		resultType="com.entity.vo.TianqiinfoVO" >
+		SELECT  tianqiinfo.* FROM tianqiinfo  tianqiinfo 	
+ 		<where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+
+    <select id="selectListView"
+		resultType="com.entity.view.TianqiinfoView" >
+
+		SELECT  tianqiinfo.* FROM tianqiinfo  tianqiinfo 	        
+        <where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+	
+	<select id="selectView"
+		resultType="com.entity.view.TianqiinfoView" >
+		SELECT * FROM tianqiinfo  tianqiinfo <where> 1=1 ${ew.sqlSegment}</where>
+	</select>
+	
+
+    <select id="selectValue" resultType="map" >
+        SELECT ${params.xColumn}, ROUND(sum(${params.yColumn}),1) total FROM tianqiinfo
+        <where> 1=1 ${ew.sqlSegment}</where>
+        group by ${params.xColumn}
+    </select>
+
+    <select id="selectTimeStatValue" resultType="map" >
+        <if test = 'params.timeStatType == "日"'>
+                SELECT DATE_FORMAT(${params.xColumn},'%Y-%m-%d') ${params.xColumn}, sum(${params.yColumn}) total FROM tianqiinfo
+                <where> 1=1 ${ew.sqlSegment}</where>
+                group by DATE_FORMAT(${params.xColumn},'%Y-%m-%d')
+        </if>
+        <if test = 'params.timeStatType == "月"'>
+                SELECT DATE_FORMAT(${params.xColumn},'%Y-%m') ${params.xColumn}, sum(${params.yColumn}) total FROM tianqiinfo
+                <where> 1=1 ${ew.sqlSegment}</where>
+                group by DATE_FORMAT(${params.xColumn},'%Y-%m')
+        </if>
+        <if test='params.timeStatType == "季"'>
+                SELECT CONCAT(YEAR(${params.xColumn}), ' - ', ELT(QUARTER(${params.xColumn}), '第一季度', '第二季度', '第三季度', '第四季度')) as ${params.xColumn}, sum(${params.yColumn}) total FROM orders
+                <where> 1=1 ${ew.sqlSegment}</where>
+                group by CONCAT(YEAR(${params.xColumn}), ' - ', ELT(QUARTER(${params.xColumn}), '第一季度', '第二季度', '第三季度', '第四季度'))
+        </if>
+        <if test = 'params.timeStatType == "年"'>
+                SELECT DATE_FORMAT(${params.xColumn},'%Y') ${params.xColumn}, sum(${params.yColumn}) total FROM tianqiinfo
+                <where> 1=1 ${ew.sqlSegment}</where>
+                group by DATE_FORMAT(${params.xColumn},'%Y')
+        </if>
+    </select>
+
+    <select id="selectGroup" resultType="map" >
+        SELECT ${params.column} , count(1) total FROM tianqiinfo
+        <where> 1=1 ${ew.sqlSegment}</where>
+        group by ${params.column}
+    </select>
+
+    <select id="gaowenSectionStat" resultType="map" >
+        SELECT '十度以下' as gaowen,case when t.十度以下 is null then 0 else t.十度以下 end total
+        from
+        (select
+        sum(case when gaowen >= 0 and gaowen &lt;= 10 then 1 else 0 end) as 十度以下,        sum(case when gaowen >= 11 and gaowen &lt;= 20 then 1 else 0 end) as 十至二十度,        sum(case when gaowen >= 21 and gaowen &lt;= 30 then 1 else 0 end) as 二十至三十度,        sum(case when gaowen >= 31 and gaowen &lt;= 40 then 1 else 0 end) as 三十至四十度,        sum(case when gaowen >= 41 then 1 else 0 end) as 四十度以上        from tianqiinfo
+        <where> 1=1 ${ew.sqlSegment}</where>
+        ) t
+        union all
+        SELECT '十至二十度' as gaowen,case when t.十至二十度 is null then 0 else t.十至二十度 end total
+        from
+        (select
+        sum(case when gaowen >= 0 and gaowen &lt;= 10 then 1 else 0 end) as 十度以下,        sum(case when gaowen >= 11 and gaowen &lt;= 20 then 1 else 0 end) as 十至二十度,        sum(case when gaowen >= 21 and gaowen &lt;= 30 then 1 else 0 end) as 二十至三十度,        sum(case when gaowen >= 31 and gaowen &lt;= 40 then 1 else 0 end) as 三十至四十度,        sum(case when gaowen >= 41 then 1 else 0 end) as 四十度以上        from tianqiinfo
+        <where> 1=1 ${ew.sqlSegment}</where>
+        ) t
+        union all
+        SELECT '二十至三十度' as gaowen,case when t.二十至三十度 is null then 0 else t.二十至三十度 end total
+        from
+        (select
+        sum(case when gaowen >= 0 and gaowen &lt;= 10 then 1 else 0 end) as 十度以下,        sum(case when gaowen >= 11 and gaowen &lt;= 20 then 1 else 0 end) as 十至二十度,        sum(case when gaowen >= 21 and gaowen &lt;= 30 then 1 else 0 end) as 二十至三十度,        sum(case when gaowen >= 31 and gaowen &lt;= 40 then 1 else 0 end) as 三十至四十度,        sum(case when gaowen >= 41 then 1 else 0 end) as 四十度以上        from tianqiinfo
+        <where> 1=1 ${ew.sqlSegment}</where>
+        ) t
+        union all
+        SELECT '三十至四十度' as gaowen,case when t.三十至四十度 is null then 0 else t.三十至四十度 end total
+        from
+        (select
+        sum(case when gaowen >= 0 and gaowen &lt;= 10 then 1 else 0 end) as 十度以下,        sum(case when gaowen >= 11 and gaowen &lt;= 20 then 1 else 0 end) as 十至二十度,        sum(case when gaowen >= 21 and gaowen &lt;= 30 then 1 else 0 end) as 二十至三十度,        sum(case when gaowen >= 31 and gaowen &lt;= 40 then 1 else 0 end) as 三十至四十度,        sum(case when gaowen >= 41 then 1 else 0 end) as 四十度以上        from tianqiinfo
+        <where> 1=1 ${ew.sqlSegment}</where>
+        ) t
+        union all
+        SELECT '四十度以上' as gaowen,case when t.四十度以上 is null then 0 else t.四十度以上 end total
+        from
+        (select
+        sum(case when gaowen >= 0 and gaowen &lt;= 10 then 1 else 0 end) as 十度以下,        sum(case when gaowen >= 11 and gaowen &lt;= 20 then 1 else 0 end) as 十至二十度,        sum(case when gaowen >= 21 and gaowen &lt;= 30 then 1 else 0 end) as 二十至三十度,        sum(case when gaowen >= 31 and gaowen &lt;= 40 then 1 else 0 end) as 三十至四十度,        sum(case when gaowen >= 41 then 1 else 0 end) as 四十度以上        from tianqiinfo
+        <where> 1=1 ${ew.sqlSegment}</where>
+        ) t
+    </select>
+    <select id="cityaqiSectionStat" resultType="map" >
+        select
+        city,
+        sum(case when aqi >= 0 and aqi &lt;= 50 then 1 else 0 end) as 优,        sum(case when aqi >= 51 and aqi &lt;= 100 then 1 else 0 end) as 良,        sum(case when aqi >= 101 and aqi &lt;= 200 then 1 else 0 end) as 轻度污染,        sum(case when aqi >= 201 and aqi &lt;= 300 then 1 else 0 end) as 中度污染,        sum(case when aqi >= 301 then 1 else 0 end) as 严重污染        from tianqiinfo
+        <where> 1=1 ${ew.sqlSegment}</where>
+        group by city
+    </select>
+    <select id="cityjsliangSectionStat" resultType="map" >
+        select
+        city,
+        sum(case when jsliang >= 0 and jsliang &lt;= 3 then 1 else 0 end) as 三以下,        sum(case when jsliang >= 3.01 and jsliang &lt;= 5 then 1 else 0 end) as 三至五,        sum(case when jsliang >= 5.01 and jsliang &lt;= 10 then 1 else 0 end) as 五至十,        sum(case when jsliang >= 10.01 then 1 else 0 end) as 十以上        from tianqiinfo
+        <where> 1=1 ${ew.sqlSegment}</where>
+        group by city
+    </select>
+
+
+
+</mapper>
